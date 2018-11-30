@@ -10,14 +10,16 @@ pipenv
 ## Getting started
 
 ### installing 
-git clone git@github.com:nicklczk/handwriting.git
-cd handwriting
-pipenv install --dev
-
+```
+- git clone git@github.com:nicklczk/handwriting.git
+- cd handwriting
+- pipenv install --dev
+```
 ### Running
-pipenv shell
-python app,py
-
+```
+- pipenv shell
+- python app,py
+```
 Then go to localhost:8000
 
 ### Formatting
