@@ -12,6 +12,7 @@ from sklearn import svm
 import matplotlib.pyplot as plt
 import torch
 from torch.autograd import Variable
+import argparse
 
 #X1 = desc.read_desc("")
 def train(feat, label, m):
@@ -64,7 +65,7 @@ def load_data(dirs):
     print("Reading training images...")
     all_imgs = []
     all_img_names = []
-    for i in len(dirs):
+    for i in range(len(dirs)):
         imgs, img_names = get_all_images_dir(dirs[i])
         all_images.append(imgs)
         all_img_names.append(img_names)
@@ -74,7 +75,7 @@ def load_data(dirs):
     Y = []
     for i in imgs:
         X.append(np.array(img))
-    for n in len(X):
+    for n in range(len(X)):
         Y.append(np.ones((X[n].shape[0],))*(n+1))
     
     return X, Y
@@ -82,10 +83,18 @@ def load_data(dirs):
 
 import torch.nn as nn
 import torch.nn.functional as F
-import sys
 
-train_dirs = sys.argv[1]
-test_dirs = sys.argv[2]
+cli = argparse.ArgumentParser()
+cli.add_argument("--train", nargs="*", type=str)
+cli.add_argument("--test", nargs="*", type=str)
+
+args = cli.parse_args()
+
+print("Training directories", args.train)
+print("Testing directories", args.test)
+
+train_dirs = args.train
+test_dirs = args.test
 
 X_1, Y_1 = load_data(train_dirs)
 X_2, Y_2 = load_data(test_dirs)
