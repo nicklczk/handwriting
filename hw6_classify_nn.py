@@ -10,7 +10,6 @@ import os
 import cv2
 from sklearn import svm
 import matplotlib.pyplot as plt
-import hw6_descriptors as desc
 import torch
 from torch.autograd import Variable
 
@@ -61,21 +60,58 @@ def success_rate(pred_Y, Y):
     rate = num_equal / float(num_equal + num_different)
     return rate, num_equal, num_different # rate.item()
 
+def load_data(dirs):
+    print("Reading training images...")
+    all_imgs = []
+    all_img_names = []
+    for i in len(dirs):
+        imgs, img_names = get_all_images_dir(dirs[i])
+        all_images.append(imgs)
+        all_img_names.append(img_names)
+
+    print("Creating data...")
+    X = []
+    Y = []
+    for i in imgs:
+        X.append(np.array(img))
+    for n in len(X):
+        Y.append(np.ones((X[n].shape[0],))*(n+1))
+    
+    return X, Y
+
+
 import torch.nn as nn
 import torch.nn.functional as F
+import sys
 
+train_dirs = sys.argv[1]
+test_dirs = sys.argv[2]
+
+X_1, Y_1 = load_data(train_dirs)
+X_2, Y_2 = load_data(test_dirs)
+
+X_train = torch.Tensor(np.vstack(X_1))
+Y_train = Variable(torch.Tensor.long(torch.Tensor(np.vstack(Y_1))))
+
+X_test = torch.Tensor(np.vstack(X_2))
+Y_test = Variable(torch.Tensor.long(torch.Tensor(np.vstack(Y_2))))
 
 ''' Prepare Training Data  '''
 # Read training images
 print("Reading training images...")
+
+'''    
 gr_imgs, gr_img_names = get_all_images_dir("hw6_data/train/grass")
 oc_imgs, oc_img_names = get_all_images_dir("hw6_data/train/ocean")
 rc_imgs, rc_img_names = get_all_images_dir("hw6_data/train/redcarpet")
 rd_imgs, rd_img_names = get_all_images_dir("hw6_data/train/road")
 wf_imgs, wf_img_names = get_all_images_dir("hw6_data/train/wheatfield")
+'''
 
 # Parse images into feature vectors
 print("Creating training data...")
+
+'''
 X_gr = np.array(gr_imgs)
 Y_gr = np.ones((X_gr.shape[0],))*1
 
@@ -90,12 +126,17 @@ Y_rd = np.ones((X_rd.shape[0],))*4
 
 X_wf = np.array(wf_imgs)
 Y_wf = np.ones((X_wf.shape[0],))*5
+'''
 
+
+'''
 X_train = torch.Tensor(np.concatenate((X_gr, X_oc, X_rc, X_rd, X_wf)))
 Y_train = Variable(torch.Tensor.long(torch.Tensor(np.concatenate((Y_gr, Y_oc, Y_rc, Y_rd, Y_wf)))))
+'''
 
 ''' Prepare Test Data  '''
 # Read training images
+'''
 print("Reading test images...")
 gr_imgs, gr_img_names = get_all_images_dir("hw6_data/test/grass")
 oc_imgs, oc_img_names = get_all_images_dir("hw6_data/test/ocean")
@@ -123,6 +164,7 @@ print(X_gr.shape)
 
 X_test = torch.Tensor(np.concatenate((X_gr, X_oc, X_rc, X_rd, X_wf)))
 Y_test = Variable(torch.Tensor.long(torch.Tensor(np.concatenate((Y_gr, Y_oc, Y_rc, Y_rd, Y_wf)))))
+'''
 
 n_train, n_valid, n_test = 4000, 1000, 1000
 #n_train, n_valid, n_test = 100, 100, 100
@@ -171,6 +213,9 @@ print(net)
 
 #  Print a s
 params = list(net.parameters())
+f = open("nn_weights.txt", "w+")
+for p in params:
+    f.write(p.size())
 print(params[0].size()) # The parameter holding the layer 1 weight matrix
 print(params[1].size()) # ... the layer 1 bias vector
 print(params[2].size()) # ... the layer 2 weight matrix
