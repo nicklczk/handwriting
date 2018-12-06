@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask = "*"
+black = "*"
+numpy = "*"
+opencv-python = "*"
+sklearn = "*"
+matplotlib = "*"
+
+[dev-packages]
+v = {editable = true,version = "*"}
+
+[requires]
+python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true
