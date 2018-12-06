@@ -10,7 +10,7 @@ numpy = "*"
 opencv-python = "*"
 sklearn = "*"
 matplotlib = "*"
-torch = {file = "http://download.pytorch.org/whl/cu90/torch-0.4.1-cp37-cp37m-win_amd64.whl"}
+torch = {file = "torch-0.4.1-cp37-cp37m-win_amd64.whl"}
 
 [dev-packages]
 v = {editable = true,version = "*"}
