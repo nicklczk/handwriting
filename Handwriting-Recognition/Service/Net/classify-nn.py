@@ -2,7 +2,7 @@
 """
 Created on Thu Nov 29 01:13:09 2018
 
-@Author: Sean Rice
+@author: Sean Rice
 """
 import sys
 import numpy as np
@@ -77,7 +77,7 @@ def load_data(dirs):
         X.append(np.array(img))
     for n in range(len(X)):
         Y.append(np.ones((X[n].shape[0],))*(n+1))
-
+    
     return X, Y
 
 
@@ -109,7 +109,7 @@ Y_test = Variable(torch.Tensor.long(torch.Tensor(np.vstack(Y_2))))
 # Read training images
 print("Reading training images...")
 
-'''
+'''    
 gr_imgs, gr_img_names = get_all_images_dir("hw6_data/train/grass")
 oc_imgs, oc_img_names = get_all_images_dir("hw6_data/train/ocean")
 rc_imgs, rc_img_names = get_all_images_dir("hw6_data/train/redcarpet")
