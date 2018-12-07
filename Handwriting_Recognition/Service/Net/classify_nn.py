@@ -4,89 +4,53 @@ Created on Thu Nov 29 01:13:09 2018
 
 @author: Sean Rice
 """
+
 import sys
+import json
 import numpy as np
 import os
 import cv2
-from sklearn import svm
+from sklearn import svm, metrics
 import matplotlib.pyplot as plt
 import torch
 from torch.autograd import Variable
 import argparse
-
-#X1 = desc.read_desc("")
-def train(feat, label, m):
-    m.fit(feat, label)
-
-def test(feat, label, m):
-    sc = m.score(feat, label)
-    return sc
-
-def read_descriptors(filename):
-    file = open(filename)
-    X = []
-    for line in file:
-        line = line.replace("\n", "").split()
-        X.append(line)
-    return X
-
-def get_all_images_dir(dir_name):
-    img_list = os.listdir(dir_name)
-    img_list.sort(reverse=True)
-    img_list = [name for name in img_list if "jpeg" in name.lower()]
-
-    imgs = [cv2.imread(dir_name + "/" + name).reshape((-1,)) for name in img_list]
-    #os.chdir(os.path.dirname(sys.argv[0]))
-    return imgs, img_list
+import torch.nn as nn
+import torch.nn.functional as F
 
 def success_rate(pred_Y, Y):
-    #print(pred_Y.data)
-    #print(Y.data)
-    '''
-    Calculate and return the success rate from the predicted output Y and the
-    expected output.  There are several issues to deal with.  First, the pred_Y
-    is non-binary, so the classification decision requires finding which column
-    index in each row of the prediction has the maximum value.  This is achieved
-    by using the torch.max() method, which returns both the maximum value and the
-    index of the maximum value; we want the latter.  We do this along the column,
-    which we indicate with the parameter 1.  Second, the once we have a 1-d vector
-    giving the index of the maximum for each of the predicted and target, we just
-    need to compare and count to get the number that are different.  We could do
-    using the Variable objects themselve, but it is easier syntactically to do this
-    using the .data Tensors for obscure PyTorch reasons.
-    '''
     _,pred_Y_index = torch.max(pred_Y, 1)
     num_equal = torch.sum(pred_Y_index.data == Y.data).item()
     num_different = torch.sum(pred_Y_index.data != Y.data).item()
     rate = num_equal / float(num_equal + num_different)
     return rate, num_equal, num_different # rate.item()
 
-def load_data(dirs):
+def read_json(filename):
+    with open(filename) as json_file:
+        data = json.load(json_file)
+        return data
+
+def load_data(filename):
     print("Reading training images...")
-    all_imgs = []
-    all_img_names = []
-    for i in range(len(dirs)):
-        imgs, img_names = get_all_images_dir(dirs[i])
-        all_images.append(imgs)
-        all_img_names.append(img_names)
+    data = read_json(filename)
 
     print("Creating data...")
-    X = []
-    Y = []
-    for i in imgs:
-        X.append(np.array(img))
-    for n in range(len(X)):
-        Y.append(np.ones((X[n].shape[0],))*(n+1))
-    
+    X = [[int(i) for i in d] for d in data["X"]]
+
+    c2l = []
+    l2c = {}
+    for cl in data["Y"]:
+        if cl not in c2l:
+            c2l.append(cl)
+            l2c[cl] = len(c2l)
+
+    Y = [l2c[d] for d in data["Y"]]
+
     return X, Y
 
-
-import torch.nn as nn
-import torch.nn.functional as F
-
 cli = argparse.ArgumentParser()
-cli.add_argument("--train", nargs="*", type=str)
-cli.add_argument("--test", nargs="*", type=str)
+cli.add_argument("--train", type=str)
+cli.add_argument("--test", type=str)
 
 args = cli.parse_args()
 
@@ -99,90 +63,20 @@ test_dirs = args.test
 X_1, Y_1 = load_data(train_dirs)
 X_2, Y_2 = load_data(test_dirs)
 
-X_train = torch.Tensor(np.vstack(X_1))
-Y_train = Variable(torch.Tensor.long(torch.Tensor(np.vstack(Y_1))))
+X_train = torch.Tensor(np.array(X_1).astype(np.uint8))
+Y_train = Variable(torch.Tensor.long(torch.Tensor(np.array(Y_1))))
 
-X_test = torch.Tensor(np.vstack(X_2))
-Y_test = Variable(torch.Tensor.long(torch.Tensor(np.vstack(Y_2))))
+X_test = torch.Tensor(np.vstack(X_2).astype(np.uint8))
+Y_test = Variable(torch.Tensor.long(torch.Tensor(np.array(Y_2))))
 
-''' Prepare Training Data  '''
-# Read training images
-print("Reading training images...")
-
-'''    
-gr_imgs, gr_img_names = get_all_images_dir("hw6_data/train/grass")
-oc_imgs, oc_img_names = get_all_images_dir("hw6_data/train/ocean")
-rc_imgs, rc_img_names = get_all_images_dir("hw6_data/train/redcarpet")
-rd_imgs, rd_img_names = get_all_images_dir("hw6_data/train/road")
-wf_imgs, wf_img_names = get_all_images_dir("hw6_data/train/wheatfield")
-'''
-
-# Parse images into feature vectors
-print("Creating training data...")
-
-'''
-X_gr = np.array(gr_imgs)
-Y_gr = np.ones((X_gr.shape[0],))*1
-
-X_oc = np.array(oc_imgs)
-Y_oc = np.ones((X_oc.shape[0],))*2
-
-X_rc = np.array(rc_imgs)
-Y_rc = np.ones((X_rc.shape[0],))*3
-
-X_rd = np.array(rd_imgs)
-Y_rd = np.ones((X_rd.shape[0],))*4
-
-X_wf = np.array(wf_imgs)
-Y_wf = np.ones((X_wf.shape[0],))*5
-'''
-
-
-'''
-X_train = torch.Tensor(np.concatenate((X_gr, X_oc, X_rc, X_rd, X_wf)))
-Y_train = Variable(torch.Tensor.long(torch.Tensor(np.concatenate((Y_gr, Y_oc, Y_rc, Y_rd, Y_wf)))))
-'''
-
-''' Prepare Test Data  '''
-# Read training images
-'''
-print("Reading test images...")
-gr_imgs, gr_img_names = get_all_images_dir("hw6_data/test/grass")
-oc_imgs, oc_img_names = get_all_images_dir("hw6_data/test/ocean")
-rc_imgs, rc_img_names = get_all_images_dir("hw6_data/test/redcarpet")
-rd_imgs, rd_img_names = get_all_images_dir("hw6_data/test/road")
-wf_imgs, wf_img_names = get_all_images_dir("hw6_data/test/wheatfield")
-
-# Parse images into feature vectors
-print("Creating test data...")
-X_gr = np.array(gr_imgs)
-Y_gr = np.ones((X_gr.shape[0],))*1
-
-X_oc = np.array(oc_imgs)
-Y_oc = np.ones((X_oc.shape[0],))*2
-
-X_rc = np.array(rc_imgs)
-Y_rc = np.ones((X_rc.shape[0],))*3
-
-X_rd = np.array(rd_imgs)
-Y_rd = np.ones((X_rd.shape[0],))*4
-
-X_wf = np.array(wf_imgs)
-Y_wf = np.ones((X_wf.shape[0],))*5
-print(X_gr.shape)
-
-X_test = torch.Tensor(np.concatenate((X_gr, X_oc, X_rc, X_rd, X_wf)))
-Y_test = Variable(torch.Tensor.long(torch.Tensor(np.concatenate((Y_gr, Y_oc, Y_rc, Y_rd, Y_wf)))))
-'''
-
-n_train, n_valid, n_test = 4000, 1000, 1000
+n_train, n_test = X_train.shape[0], X_test.shape[0]
 #n_train, n_valid, n_test = 100, 100, 100
 
 '''  Create network  '''
-N0 = 259200
+N0 = X_train.shape[1]
 N1 = 250
-N2 = 25
-Nout = 6
+N2 = 100
+Nout = 52
 
 class Net(nn.Module):
 
@@ -215,16 +109,16 @@ class Net(nn.Module):
 #  Create an instance of this network.
 net = Net().cuda()
 criterion = nn.CrossEntropyLoss().cuda()
-optimizer = torch.optim.SGD(net.parameters(), lr=1e-6)
+optimizer = torch.optim.SGD(net.parameters(), lr=.0001)
 
 #  Print a summary of the network.  Notice that this only shows the layers
 print(net)
 
-#  Print a s
+#  Write the network weights to a file
 params = list(net.parameters())
-f = open("nn_weights.txt", "w+")
-for p in params:
-    f.write(p.size())
+# f = open("nn_weights.txt", "w+")
+# for p in params:
+#     f.write(p.size())
 print(params[0].size()) # The parameter holding the layer 1 weight matrix
 print(params[1].size()) # ... the layer 1 bias vector
 print(params[2].size()) # ... the layer 2 weight matrix
@@ -234,25 +128,11 @@ print(params[5].size()) # ... the layer 5 bias vector
 
 '''  Training  '''
 #  Set parameters to control the process
-epochs = 100
+epochs = 1000
 batch_size = 64
 n_batches = int(np.ceil(n_train / batch_size))
-learning_rate = 1e-6
 
-#  Compute an initial loss using all of the validation data.
-#
-#  A couple of notes are important here:
-#  (1) X_valid contains all of the validation input, with each validation
-#      data instance being a row of X_valid
-#  (2) Therefore, pred_Y_valid is a Variable containing the output layer
-#      activations for each of the validation inputs.
-#  (3) This is accomplished through the function call net(X_valid), which in
-#      turn calls the forward method under the hood to figure out the flow of
-#      the data and activations in the network.
-#pred_Y_valid = net(X_valid)
-#valid_loss = criterion(pred_Y_valid, Y_valid)
-#print("Initial loss: %.5f" % valid_loss.item())
-
+# Store Test/Training accuracy per epoch
 train_acc = []
 test_acc = []
 
@@ -272,7 +152,7 @@ for ep in range(epochs):
         #  Run the network on each data instance in the minibatch
         #  and then compute the object function value
         pred_Y = net(batch_X)
-        #print(pred_Y)
+
         loss = criterion(pred_Y, batch_Y)
 
         #  Back-propagate the gradient through the network using the
@@ -316,35 +196,21 @@ for ep in range(epochs):
         a, e, d = success_rate(pred_Y, batch_Y)
         num_eq += e
         num_diff += d
+
+    #  Compute and print the training and test loss
     acc = num_eq / float(num_eq + num_diff)
     print('Test success rate:', acc)
     test_acc.append(acc)
-#    pred_Y_train = net(X_train)
-#    loss = criterion(pred_Y_train, Y_train)
-#    print('Final training loss is %.5f' %loss.item())
-#
-#    pred_Y_test = net(X_test)
-#    test_loss = criterion(pred_Y_test, Y_test)
-#    print("Final test loss: %.5f" % test_loss.item())
 
 
-#    acc = success_rate(pred_Y_test, Y_test)
-#    print('Test success rate:', success_rate(pred_Y_test, Y_test))
-#    test_acc.append(acc)
-#
+pred_Y = torch.max(net(X_test.cuda()),1)[1].detach().cpu().numpy()
+print(pred_Y)
+print(Y_test)
+
+conf_matrix = metrics.confusion_matrix(pred_Y, Y_test)
+for l in conf_matrix.tolist():
+    print(l)
+
 plt.plot(train_acc, color="green")
 plt.plot(test_acc, color="red")
 plt.show()
-
-        #  Complete the mini-batch by actually updating the parameters.
-#        for param in net.parameters():
-#            param.data -= learning_rate * param.grad.data
-
-#    #  Print validation loss every 10 epochs
-#    if ep != 0 and ep%10 == 0:
-#        pred_Y_valid = net(X_valid)
-#        valid_loss = criterion(pred_Y_valid, Y_valid)
-#        print("Epoch %d loss: %.5f" %(ep, valid_loss.item()))
-
-#  Compute and print the final training and test loss
-#  function values
