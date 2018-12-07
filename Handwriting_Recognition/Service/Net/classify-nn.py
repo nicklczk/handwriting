@@ -15,14 +15,6 @@ import torch
 from torch.autograd import Variable
 import argparse
 
-#X1 = desc.read_desc("")
-def train(feat, label, m):
-    m.fit(feat, label)
-
-def test(feat, label, m):
-    sc = m.score(feat, label)
-    return sc
-
 def read_descriptors(filename):
     file = open(filename)
     X = []
@@ -110,77 +102,11 @@ Y_test = Variable(torch.Tensor.long(torch.Tensor(np.vstack(Y_2))))
 # Read training images
 print("Reading training images...")
 
-'''
-gr_imgs, gr_img_names = get_all_images_dir("hw6_data/train/grass")
-oc_imgs, oc_img_names = get_all_images_dir("hw6_data/train/ocean")
-rc_imgs, rc_img_names = get_all_images_dir("hw6_data/train/redcarpet")
-rd_imgs, rd_img_names = get_all_images_dir("hw6_data/train/road")
-wf_imgs, wf_img_names = get_all_images_dir("hw6_data/train/wheatfield")
-'''
-
-# Parse images into feature vectors
-print("Creating training data...")
-
-'''
-X_gr = np.array(gr_imgs)
-Y_gr = np.ones((X_gr.shape[0],))*1
-
-X_oc = np.array(oc_imgs)
-Y_oc = np.ones((X_oc.shape[0],))*2
-
-X_rc = np.array(rc_imgs)
-Y_rc = np.ones((X_rc.shape[0],))*3
-
-X_rd = np.array(rd_imgs)
-Y_rd = np.ones((X_rd.shape[0],))*4
-
-X_wf = np.array(wf_imgs)
-Y_wf = np.ones((X_wf.shape[0],))*5
-'''
-
-
-'''
-X_train = torch.Tensor(np.concatenate((X_gr, X_oc, X_rc, X_rd, X_wf)))
-Y_train = Variable(torch.Tensor.long(torch.Tensor(np.concatenate((Y_gr, Y_oc, Y_rc, Y_rd, Y_wf)))))
-'''
-
-''' Prepare Test Data  '''
-# Read training images
-'''
-print("Reading test images...")
-gr_imgs, gr_img_names = get_all_images_dir("hw6_data/test/grass")
-oc_imgs, oc_img_names = get_all_images_dir("hw6_data/test/ocean")
-rc_imgs, rc_img_names = get_all_images_dir("hw6_data/test/redcarpet")
-rd_imgs, rd_img_names = get_all_images_dir("hw6_data/test/road")
-wf_imgs, wf_img_names = get_all_images_dir("hw6_data/test/wheatfield")
-
-# Parse images into feature vectors
-print("Creating test data...")
-X_gr = np.array(gr_imgs)
-Y_gr = np.ones((X_gr.shape[0],))*1
-
-X_oc = np.array(oc_imgs)
-Y_oc = np.ones((X_oc.shape[0],))*2
-
-X_rc = np.array(rc_imgs)
-Y_rc = np.ones((X_rc.shape[0],))*3
-
-X_rd = np.array(rd_imgs)
-Y_rd = np.ones((X_rd.shape[0],))*4
-
-X_wf = np.array(wf_imgs)
-Y_wf = np.ones((X_wf.shape[0],))*5
-print(X_gr.shape)
-
-X_test = torch.Tensor(np.concatenate((X_gr, X_oc, X_rc, X_rd, X_wf)))
-Y_test = Variable(torch.Tensor.long(torch.Tensor(np.concatenate((Y_gr, Y_oc, Y_rc, Y_rd, Y_wf)))))
-'''
-
-n_train, n_valid, n_test = 4000, 1000, 1000
+n_train, n_test = X_train.shape[0], X_test.shape[0]
 #n_train, n_valid, n_test = 100, 100, 100
 
 '''  Create network  '''
-N0 = 259200
+N0 =
 N1 = 250
 N2 = 25
 Nout = 6
@@ -221,7 +147,7 @@ optimizer = torch.optim.SGD(net.parameters(), lr=1e-6)
 #  Print a summary of the network.  Notice that this only shows the layers
 print(net)
 
-#  Print a s
+#  Write the network weights to a file
 params = list(net.parameters())
 f = open("nn_weights.txt", "w+")
 for p in params:
@@ -240,20 +166,7 @@ batch_size = 64
 n_batches = int(np.ceil(n_train / batch_size))
 learning_rate = 1e-6
 
-#  Compute an initial loss using all of the validation data.
-#
-#  A couple of notes are important here:
-#  (1) X_valid contains all of the validation input, with each validation
-#      data instance being a row of X_valid
-#  (2) Therefore, pred_Y_valid is a Variable containing the output layer
-#      activations for each of the validation inputs.
-#  (3) This is accomplished through the function call net(X_valid), which in
-#      turn calls the forward method under the hood to figure out the flow of
-#      the data and activations in the network.
-#pred_Y_valid = net(X_valid)
-#valid_loss = criterion(pred_Y_valid, Y_valid)
-#print("Initial loss: %.5f" % valid_loss.item())
-
+# Store Test/Training accuracy per epoch
 train_acc = []
 test_acc = []
 
@@ -317,35 +230,12 @@ for ep in range(epochs):
         a, e, d = success_rate(pred_Y, batch_Y)
         num_eq += e
         num_diff += d
+
+    #  Compute and print the training and test loss
     acc = num_eq / float(num_eq + num_diff)
     print('Test success rate:', acc)
     test_acc.append(acc)
-#    pred_Y_train = net(X_train)
-#    loss = criterion(pred_Y_train, Y_train)
-#    print('Final training loss is %.5f' %loss.item())
-#
-#    pred_Y_test = net(X_test)
-#    test_loss = criterion(pred_Y_test, Y_test)
-#    print("Final test loss: %.5f" % test_loss.item())
 
-
-#    acc = success_rate(pred_Y_test, Y_test)
-#    print('Test success rate:', success_rate(pred_Y_test, Y_test))
-#    test_acc.append(acc)
-#
-plt.plot(train_acc, color="green")
-plt.plot(test_acc, color="red")
-plt.show()
-
-        #  Complete the mini-batch by actually updating the parameters.
-#        for param in net.parameters():
-#            param.data -= learning_rate * param.grad.data
-
-#    #  Print validation loss every 10 epochs
-#    if ep != 0 and ep%10 == 0:
-#        pred_Y_valid = net(X_valid)
-#        valid_loss = criterion(pred_Y_valid, Y_valid)
-#        print("Epoch %d loss: %.5f" %(ep, valid_loss.item()))
-
-#  Compute and print the final training and test loss
-#  function values
+    plt.plot(train_acc, color="green")
+    plt.plot(test_acc, color="red")
+    plt.show()
