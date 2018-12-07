@@ -81,7 +81,7 @@ def create_data(child_dirs) :
     data = {}
 
     # For each child dir, make class training data
-    for subdir in child_dirs[:2]:
+    for subdir in child_dirs:
         classname = os.path.basename(subdir)
         print(classname)
 
