@@ -108,3 +108,6 @@ hw6_data/
 Handwriting_Recognition/Service/Net/torch
 Handwriting_Recognition/Service/Net/torchvision
 Handwriting_Recognition/torch-0.4.1-cp37-cp37m-win_amd64.whl
+Handwriting_Recognition/Service/data/Img
+/Handwriting_Recognition/Service/Net/cnn.py
+/Handwriting_Recognition/Service/Net/nn_weights.txt
