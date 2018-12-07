@@ -71,9 +71,38 @@ def upload_file_post():
     return jsonify(data_out)
 
 ################################################################################
+###  Label Image  ##############################################################
+################################################################################
+'''
+This is the bread and butter of the application.
+
+POST /label_image
+    Input: request object...
+        API key
+        File file_guid
+        Input file __name__
+    Modifies: Saves an imae to /temp_files/labeled_<GUID>.ext
+    Return: JSON object
+        Input data
+        Output file __name__
+        Line rects
+        Line
+'''
+@app.route("/label_image", methods=["POST"])
+def label_image_post():
+    # Request data
+    r = request
+
+    # This should hold deserialized JSON input data
+    data_in = {}
+
+    # Verify API key
+
+    # Load images from uid
+
+################################################################################
 ###  Extract Text Area  ########################################################
 ################################################################################
-
 '''
 POST /extract_text_area
     Input: request object...
