@@ -12668,11 +12668,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Sean Rice\\Source\\Repos\\Handwriting\\Handwriting\\Handwriting.csproj",
+      "projectUniqueName": "C:\\Users\\Sean Rice\\Source\\Repos\\Handwriting\\Handwriting_Web\\Handwriting\\Handwriting.csproj",
       "projectName": "Handwriting",
-      "projectPath": "C:\\Users\\Sean Rice\\Source\\Repos\\Handwriting\\Handwriting\\Handwriting.csproj",
+      "projectPath": "C:\\Users\\Sean Rice\\Source\\Repos\\Handwriting\\Handwriting_Web\\Handwriting\\Handwriting.csproj",
       "packagesPath": "C:\\Users\\Sean Rice\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Sean Rice\\Source\\Repos\\Handwriting\\Handwriting\\obj\\",
+      "outputPath": "C:\\Users\\Sean Rice\\Source\\Repos\\Handwriting\\Handwriting_Web\\Handwriting\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

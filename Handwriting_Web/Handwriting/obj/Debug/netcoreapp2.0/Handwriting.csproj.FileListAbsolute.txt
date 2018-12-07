@@ -9,3 +9,13 @@ C:\Users\Sean Rice\Source\Repos\Handwriting\Handwriting\obj\Debug\netcoreapp2.0\
 C:\Users\Sean Rice\Source\Repos\Handwriting\Handwriting\obj\Debug\netcoreapp2.0\Handwriting.AssemblyInfo.cs
 C:\Users\Sean Rice\Source\Repos\Handwriting\Handwriting\obj\Debug\netcoreapp2.0\Handwriting.dll
 C:\Users\Sean Rice\Source\Repos\Handwriting\Handwriting\obj\Debug\netcoreapp2.0\Handwriting.pdb
+C:\Users\Sean Rice\Source\Repos\Handwriting\Handwriting_Web\Handwriting\bin\Debug\netcoreapp2.0\Handwriting.deps.json
+C:\Users\Sean Rice\Source\Repos\Handwriting\Handwriting_Web\Handwriting\bin\Debug\netcoreapp2.0\Handwriting.runtimeconfig.json
+C:\Users\Sean Rice\Source\Repos\Handwriting\Handwriting_Web\Handwriting\bin\Debug\netcoreapp2.0\Handwriting.runtimeconfig.dev.json
+C:\Users\Sean Rice\Source\Repos\Handwriting\Handwriting_Web\Handwriting\bin\Debug\netcoreapp2.0\Handwriting.dll
+C:\Users\Sean Rice\Source\Repos\Handwriting\Handwriting_Web\Handwriting\bin\Debug\netcoreapp2.0\Handwriting.pdb
+C:\Users\Sean Rice\Source\Repos\Handwriting\Handwriting_Web\Handwriting\obj\Debug\netcoreapp2.0\Handwriting.csproj.CoreCompileInputs.cache
+C:\Users\Sean Rice\Source\Repos\Handwriting\Handwriting_Web\Handwriting\obj\Debug\netcoreapp2.0\Handwriting.AssemblyInfoInputs.cache
+C:\Users\Sean Rice\Source\Repos\Handwriting\Handwriting_Web\Handwriting\obj\Debug\netcoreapp2.0\Handwriting.AssemblyInfo.cs
+C:\Users\Sean Rice\Source\Repos\Handwriting\Handwriting_Web\Handwriting\obj\Debug\netcoreapp2.0\Handwriting.dll
+C:\Users\Sean Rice\Source\Repos\Handwriting\Handwriting_Web\Handwriting\obj\Debug\netcoreapp2.0\Handwriting.pdb
