@@ -41,7 +41,8 @@ def color_descriptor(img):
     return norm_range(desc)
 
 def basic_descriptor(img):
-    return img.flatten()
+    img_r = cv2.resize(img, dsize=(24,32))
+    return img_r.flatten()
 
 '''  Load batches of images into memory. For each image we:
         Calculate descriptor vector
