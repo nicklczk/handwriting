@@ -58,7 +58,7 @@ Write json string to file from python dict
 '''
 def write_json(filename, data={}):
     with open(filename, 'w') as outfile:
-        json.dump(data, outfile, indent=4)
+        json.dump(data, outfile)
 
 '''
 Create a list containing all sub-directories in the input path
@@ -91,7 +91,7 @@ def create_data(child_dirs) :
         # Parse descriptors
         descs = {}
         for i in range(len(imgs)):
-            desc = descriptor.basic_descriptor(imgs[i]).tolist()
+            desc = descriptor.binary_descriptor_inv(imgs[i]).tolist()
             descs[img_names[i]] = {
                 "desc" : desc,
                 "len" : len(desc)
@@ -112,6 +112,49 @@ def create_train_data(data):
     }
     return train_data
 
+def create_data_ttv(child_dirs):
+    data = {
+        "train" : {
+            "X" : [],
+            "Y" : []
+        },
+        "test" :  {
+            "X" : [],
+            "Y" : []
+        },
+        "valid" : {
+            "X" : [],
+            "Y" : []
+        }
+    }
+
+    # For each child dir, make class training data
+    for subdir in child_dirs:
+        classname = os.path.basename(subdir)
+        print(classname)
+
+        img_names = list_images(subdir)
+        imgs = imread_list(img_names)
+
+        l = len(imgs)
+        i_1 = int(l*.70)
+        i_2 = int(l*.85)
+
+        for i in range(0, i_1):
+            desc = descriptor.binary_descriptor_inv(imgs[i]).tolist()
+            data["train"]["X"].append(desc)
+            data["train"]["Y"].append(classname)
+        for i in range(i_1, i_2):
+            desc = descriptor.binary_descriptor_inv(imgs[i]).tolist()
+            data["test"]["X"].append(desc)
+            data["test"]["Y"].append(classname)
+        for i in range(i_2, l):
+            desc = descriptor.binary_descriptor_inv(imgs[i]).tolist()
+            data["valid"]["X"].append(desc)
+            data["valid"]["Y"].append(classname)
+
+    return data
+
 
 '''
 Read a list of images using cv2
@@ -128,8 +171,8 @@ if __name__ == "__main__":
     # Get child dirs
     child_dirs = list_subdirs(parent_dir)
 
-    data = create_data(child_dirs)
-    train_data = create_train_data(data)
+    print("Creating data...")
+    data = create_data_ttv(child_dirs)
 
-    write_json("data.json", data)
-    write_json("train_data.json", train_data)
+    # write_json("data.json", data)
+    write_json(sys.argv[2], data)
