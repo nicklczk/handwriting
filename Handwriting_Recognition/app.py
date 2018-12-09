@@ -19,7 +19,7 @@ def hello_name():
 ################################################################################
 '''
 GET /Upload
-    Return static page upload.html
+    Return: static page upload.html
 '''
 @app.route("/upload", methods=["GET"])
 def upload_file_get():
@@ -219,6 +219,25 @@ def extract_letters_post():
     }
 
     return jsonify(data_out)
+
+################################################################################
+###  Classifier Statistics  ####################################################
+################################################################################
+'''
+POST /classifier/statistics
+    Input: request object...
+        API key
+        Classifier GUID
+    Return: JSON object...
+        Input data
+'''
+@app.route("/classifier/statistics", methods=["GET","POST"])
+def classifier_statistics_post():
+    return render_template("statistics.html")
+
+@app.route("/classifiers", methods=["GET"])
+def classifiers_get():
+    return render_template("classifiers")
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=8000)
