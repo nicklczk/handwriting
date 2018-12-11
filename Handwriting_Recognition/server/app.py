@@ -1,6 +1,23 @@
 from flask import Flask, render_template, jsonify, request, Response, redirect, url_for
+import os, sys
+import services.net.classify_nn
 
 app = Flask(__name__)
+
+'''
+Create a list containing all sub-directories in the input path
+'''
+def list_subdirs(dir_name):
+    dir_list = os.listdir(dir_name)
+    dir_list.sort()
+    dir_list = [os.path.join(dir_name, name) for name in dir_list if os.path.isdir(os.path.join(dir_name, name))]
+    return dir_list
+
+def list_classifiers(dir_name):
+    cl_list = os.listdir(dir_name)
+    cl_list.sort()
+    cl_list = [os.path.join(dir_name, name) for name in cl_list if os.path.splitext(name.lower())[1] in [".pt"]]
+    return cl_list
 
 ################################################################################
 ###  Index  ####################################################################
@@ -227,17 +244,59 @@ def extract_letters_post():
 POST /classifier/statistics
     Input: request object...
         API key
-        Classifier GUID
+        Classifier name
     Return: JSON object...
         Input data
 '''
-@app.route("/classifier/statistics", methods=["GET","POST"])
+@app.route("/classifier/stats", methods=["POST"])
+@app.route("/classifier/statistics", methods=["POST"])
 def classifier_statistics_post():
-    return render_template("statistics.html")
+    # Get api_key
+    r = request
+    api_key = request.form.get("api_key") if "api_key" in request.form else ""
+    classifier_name = request.form.get("classifier_name") if "classifier_name" in request.form else ""
+
+    # Grab all subdirectories of ~/classifiers
+    cl_path = os.path.join(app.root_path, "classifiers")
+    dirs = list_subdirs(cl_path)
+
+    # Grab dir ~/classifiers/<api_key> if it exists
+    api_dir = os.path.join(cl_path, api_key) if os.path.join(cl_path, api_key) in dirs else ""
+
+    if (api_dir != ""):
+        filepath = os.path.join(api_dir, classifier_name)
+        if (os.path.isfile(filepath)):
+            data = classify_nn.read_json(filepath)
+            return jsonify(data)
+        else:
+            return jsonify({"error":"No statistics available."})
+    else:
+        return jsonify({"error":"Api key not recognized."})
+
 
 @app.route("/classifiers", methods=["GET"])
 def classifiers_get():
-    return render_template("classifiers")
+    return render_template("classifiers.html")
+
+
+@app.route("/classifiers", methods=["POST"])
+def classifiers_post():
+    # Get api_key
+    r = request
+    api_key = request.form.get("api_key") if "api_key" in request.form else ""
+
+    # Grab all subdirectories of ~/classifiers
+    cl_path = os.path.join(app.root_path, "classifiers")
+    dirs = list_subdirs(cl_path)
+
+    # Grab dir ~/classifiers/<api_key> if it exists
+    api_dir = os.path.join(cl_path, api_key) if os.path.join(cl_path, api_key) in dirs else ""
+
+    # if (api_dir != ""):
+    #     classify_nn.
+
+    return jsonify({"classifiers":list_classifiers(api_dir)})
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=8000)

@@ -247,6 +247,8 @@ def load_data(filename):
 
     return (X_train, Y_train), (X_test, Y_test), (X_valid, Y_valid)
 
+# def create_new(filename, learn_rate)
+
 '''
 TTV short for Train, Test, Validation
 '''
