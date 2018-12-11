@@ -1,6 +1,6 @@
 # handwriting
 
-handwriting is a simple handwriting recognition service for our Cognitive Computing class at RPI using openCV and IBM Watson. It will allow for a user to upload an image of their handwritten text returning the text in a computer-friendly format. 
+handwriting is a simple handwriting recognition service for our Cognitive Computing class at RPI using openCV and IBM Watson. It will allow for a user to upload an image of their handwritten text returning the text in a computer-friendly format.
 
 ## requirements
 
@@ -9,7 +9,7 @@ pipenv
 
 ## Getting started
 
-### installing 
+### installing
 ```
 - git clone git@github.com:nicklczk/handwriting.git
 - cd handwriting
