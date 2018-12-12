@@ -11,7 +11,7 @@ import numpy as np
 import os
 import cv2
 from sklearn import svm, metrics
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import torch
 from torch.autograd import Variable
 import argparse
@@ -370,8 +370,8 @@ if __name__ == "__main__":
 
 
 
-    plt.matshow(classifier.confusion_matrix(X_test, Y_test))
-    plt.show()
+    # plt.matshow(classifier.confusion_matrix(X_test, Y_test))
+    # plt.show()
     print("Test Accuracy:", classifier.model_accuracy(X_test, Y_test))
 
     # plt.plot(train_acc, color="green")
