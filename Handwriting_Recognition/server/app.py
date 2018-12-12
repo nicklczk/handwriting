@@ -10,12 +10,13 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 import os, sys
-import services.net.classify_nn
+from services.net import classify_nn, extract1
+import uuid
+import cv2
 
-
-UPLOAD_FOLDER = "/PATHTO/handwriting/Handwriting_Recognition/server/services/Extract" # Must specify your upload folder right now
-ALLOWED_EXTENSIONS = set(["png"])
 app = Flask(__name__)
+UPLOAD_FOLDER = os.path.join(app.root_path, "images") # Must specify your upload folder right now
+ALLOWED_EXTENSIONS = set(["png", "jpg"])
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 """
@@ -35,14 +36,29 @@ def list_subdirs(dir_name):
 
 
 def list_classifiers(dir_name):
-    cl_list = os.listdir(dir_name)
-    cl_list.sort()
-    cl_list = [
-        os.path.join(dir_name, name)
-        for name in cl_list
+    if not os.path.isdir(dir_name):
+        return [],[],[]
+
+    cl_files = os.listdir(dir_name)
+    cl_files.sort()
+    cl_names = [
+        os.path.splitext(name)[0]
+        for name in cl_files
         if os.path.splitext(name.lower())[1] in [".pt"]
     ]
-    return cl_list
+
+    stats_files = []
+    for cl in cl_names:
+        filename = cl+"_stats.json"
+        jsn = None
+        if (os.path.isfile(filename)):
+            jsn = classify_nn.read_json(filename)
+        else:
+            jsn = "None"
+
+        stats_files.append(os.path.splitext(jsn)[0])
+
+    return cl_names, cl_files, stats_files
 
 
 def allowed_file(filename):
@@ -124,19 +140,44 @@ POST /label_image
         Line rects
         Line
 """
+@app.route("/label_image/<filename>", methods=["GET"])
+def label_image_post(filename):
 
+    # Parse request
+    api_key = request.form.get("api_key") if "api_key" in request.form else ""
+    classifier_name = (
+        request.form.get("file_uuid") if "file_uuid" in request.form else ""
+    )
+    image_name = request.form.get("img_name") if "img_name" in request.form else ""
 
-@app.route("/label_image", methods=["POST"])
-def label_image_post():
-    # Request data
-    r = request
+    class_path = os.path.join("classifiers", "dev_demo_1", "mnist.pt")
+    image_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
 
-    # This should hold deserialized JSON input data
-    data_in = {}
+    img = cv2.imread(image_path)
 
-    # Verify API key
+    letter_rects = extract1.extract_letters(img)
 
-    # Load images from uid
+    predictions = classify_nn.classify(class_path, image_path, letter_rects)
+
+    print(predictions)
+
+    data = {
+        "letter_rects" : letter_rects,
+        "predictions" : predictions
+    }
+
+    return send_from_directory(app.config["UPLOAD_FOLDER"], "out.jpg")
+
+    # # Api key gives the filepath
+    # if (api_dir != ""):
+    #     filepath = os.path.join(api_dir, classifier_name + ".json")
+    #     if (os.path.isfile(filepath)):
+    #         data = classify_nn.read_json(filepath)
+    #         return jsonify(data)
+    #     else:
+    #         return jsonify({"error": "No statistics available."})
+    # else:
+    #     return jsonify({"error": "Api key not recognized."})
 
 
 ################################################################################
@@ -287,9 +328,9 @@ def classifier_statistics_post():
         os.path.join(cl_path, api_key) if os.path.join(cl_path, api_key) in dirs else ""
     )
 
-    if api_dir != "":
-        filepath = os.path.join(api_dir, classifier_name)
-        if os.path.isfile(filepath):
+    if (api_dir != ""):
+        filepath = os.path.join(api_dir, classifier_name + ".json")
+        if (os.path.isfile(filepath)):
             data = classify_nn.read_json(filepath)
             return jsonify(data)
         else:
@@ -305,8 +346,9 @@ def classifiers_get():
 
 @app.route("/classifiers", methods=["POST"])
 def classifiers_post():
-    # Get api_key
     r = request
+
+    # Get api_key
     api_key = request.form.get("api_key") if "api_key" in request.form else ""
 
     # Grab all subdirectories of ~/classifiers
@@ -321,7 +363,16 @@ def classifiers_post():
     # if (api_dir != ""):
     #     classify_nn.
 
-    return jsonify({"classifiers": list_classifiers(api_dir)})
+    classifiers, cl_files, stats_files = list_classifiers(api_dir)
+
+    data = {}
+    for i in range(len(classifiers)):
+        data[classifiers[i]] = {
+            "model" : cl_files[i],
+            "stats" : stats_files[i]
+        }
+
+    return jsonify({"classifiers": data})
 
 
 if __name__ == "__main__":

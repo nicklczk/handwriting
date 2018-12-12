@@ -17,6 +17,8 @@ from torch.autograd import Variable
 import argparse
 import torch.nn as nn
 import torch.nn.functional as F
+from . import extract1
+from . import descriptor
 
 '''
 Load the parameters of a NN from filename
@@ -270,6 +272,50 @@ def split_data_ttv(X):
     X_va = X1[i_2:]
 
     return X_tr, X_te, X_va
+
+def classify(cl_filepath, im_filepath, letter_rects):
+    classifier = NN_Classifier()
+
+    # Load an existing classifier from file
+    if (cl_filepath!= None and os.path.isfile(cl_filepath)):
+        classifier.save_path(cl_filepath)
+        classifier.load()
+
+        print("epoch", classifier.curr_epoch)
+
+        # Load image from files
+        img = cv2.imread(im_filepath)
+
+        predictions = []
+        im_out = img.copy()
+        for rect in letter_rects:
+            x,y,w,h = rect
+            subim = img[y-20:y+h+20, x-20:x+w+20]
+
+
+            desc = descriptor.binary_descriptor_inv(subim)
+
+            X = torch.Tensor(np.array(desc).astype(np.uint8).reshape(-1,desc.shape[0]))
+
+            pred_Y = classifier.model(X.cuda())
+
+            class_ind = torch.max(pred_Y, 1)[1].detach().cpu().numpy()
+
+            pred = chr(class_ind[0]+64) if class_ind[0] > 0 and class_ind[0] < 27 else '?'
+            predictions.append(pred)
+
+            print(pred, class_ind[0])
+            # cv2.imshow("subim", subim)
+            # cv2.waitKey(0)
+
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            cv2.putText(im_out,pred,(x,y), font, 2,(0,0,255),2,cv2.LINE_AA)
+            cv2.rectangle(im_out, (x, y), (x+w, y+h), (255, 0, 0))
+            cv2.imwrite("images/out.jpg", im_out)
+
+        return predictions
+
+
 
 #classifier.save("net_test.pt")
 if __name__ == "__main__":
