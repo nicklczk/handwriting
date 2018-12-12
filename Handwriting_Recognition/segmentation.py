@@ -142,7 +142,7 @@ if __name__ == "__main__":
             #cv2.imshow('marked areas',image_resize(rect,height=256))
             #cv2.waitKey(0)
             #cv2.destroyAllWindows()            
-            cv2.imwrite(str(i)+"-"+str(j)+".png",image_resize(rect,height=256))
+            #cv2.imwrite(str(i)+"-"+str(j)+".png",image_resize(rect,height=256))
         words.append(letters)
         
         # draw on original image
