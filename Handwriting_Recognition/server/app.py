@@ -87,7 +87,7 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-            return redirect(url_for("uploaded_file", filename=filename))
+            return redirect(url_for("label_image_get", filename=filename))
     return render_template("core.html")
 
 
@@ -141,7 +141,7 @@ POST /label_image
         Line
 """
 @app.route("/label_image/<filename>", methods=["GET"])
-def label_image_post(filename):
+def label_image_get(filename):
 
     # Parse request
     api_key = request.form.get("api_key") if "api_key" in request.form else ""
@@ -155,7 +155,9 @@ def label_image_post(filename):
 
     img = cv2.imread(image_path)
 
-    letter_rects = extract1.extract_letters(img)
+    text_regions = extract1.extract_regions(img)
+    letter_rects = extract1.extract_letters(img, text_regions)
+    print(letter_rects)
 
     predictions = classify_nn.classify(class_path, image_path, letter_rects)
 
