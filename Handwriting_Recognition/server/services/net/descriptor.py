@@ -9,6 +9,9 @@ import sys
 import numpy as np
 import os
 import cv2
+import math
+import scipy
+import matplotlib.pyplot as plt
 
 
 def norm_range(x, hi):
@@ -46,15 +49,78 @@ def basic_descriptor(img):
 
 def binary_descriptor(img):
     img_r = cv2.resize(img, dsize=(28,28))
-    img_gr = cv2.cvtColor(img_r, cv2.COLOR_BGR2GRAY)
-    img_gr = np.where(img_gr > 127, 1, 0)
-    return img_gr.flatten()
+    if (img.shape == (28,28,3)):
+        img_r = cv2.cvtColor(img_r, cv2.COLOR_BGR2GRAY)
+    img_r = np.where(img_r > 127, 1, 0)
+    return img_r.flatten()
 
 def binary_descriptor_inv(img):
     img_r = cv2.resize(img, dsize=(28,28))
-    img_gr = cv2.cvtColor(img_r, cv2.COLOR_BGR2GRAY)
-    img_gr = np.where(img_gr > 127, 0, 1)
-    return img_gr.flatten()
+    if (img.shape == (28,28,3)):
+        img_r = cv2.cvtColor(img_r, cv2.COLOR_BGR2GRAY)
+    img_r = np.where(img_r > 127, 0, 1)
+
+    return img_r.flatten()
+
+def getBestShift(img):
+    cy,cx = scipy.ndimage.measurements.center_of_mass(img)
+
+    rows,cols = img.shape
+    shiftx = np.round(cols/2.0-cx).astype(int)
+    shifty = np.round(rows/2.0-cy).astype(int)
+
+    return shiftx,shifty
+
+def shift(img,sx,sy):
+    rows,cols = img.shape
+    M = np.float32([[1,0,sx],[0,1,sy]])
+    shifted = cv2.warpAffine(img,M,(cols,rows))
+    return shifted
+
+def format_img_emnist(img, black_on_white=True, desc_method=binary_descriptor):
+
+    img_r = cv2.resize(img, dsize=(28,28))
+    if (black_on_white==True):
+        gray = cv2.cvtColor(255 - img_r, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = cv2.cvtColor(img_r, cv2.COLOR_BGR2GRAY)
+
+    while np.sum(gray[0]) == 0:
+        gray = gray[1:]
+
+    while np.sum(gray[:,0]) == 0:
+        gray = np.delete(gray,0,1)
+
+    while np.sum(gray[-1]) == 0:
+        gray = gray[:-1]
+
+    while np.sum(gray[:,-1]) == 0:
+        gray = np.delete(gray,-1,1)
+
+    rows,cols = gray.shape
+
+    if rows > cols:
+        factor = 20.0/rows
+        rows = 20
+        cols = int(round(cols*factor))
+        gray = cv2.resize(gray, (cols,rows))
+    else:
+        factor = 20.0/cols
+        cols = 20
+        rows = int(round(rows*factor))
+        gray = cv2.resize(gray, (cols, rows))
+
+    # plt.imshow(gray)
+    # plt.show()
+    colsPadding = (int(math.ceil((28-cols)/2.0)),int(math.floor((28-cols)/2.0)))
+    rowsPadding = (int(math.ceil((28-rows)/2.0)),int(math.floor((28-rows)/2.0)))
+    gray = np.lib.pad(gray,(rowsPadding,colsPadding),'constant')
+
+    shiftx,shifty = 0,0
+    shifted = shift(gray,shiftx,shifty)
+    gray = shifted
+
+    return desc_method(gray)
 
 '''  Load batches of images into memory. For each image we:
         Calculate descriptor vector

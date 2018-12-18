@@ -169,16 +169,9 @@ def word_hist(img_line):
 	# Calculate histogram of each slice along X axis
 	hist = np.sum(skel/255, axis=0).reshape(-1,1)
 
-	# Filter the histogram using bilateral filtering to preserve
-	# the sharp edges in the histogram
-	# hist = cv2.bilateralFilter(hist.astype(np.uint8),15,150,150)
-	# hist = cv2.bilateralFilter(hist.astype(np.uint8),15,150,150)
-	# hist = cv2.bilateralFilter(hist.astype(np.uint8),15,150,150)
 	hist = cv2.GaussianBlur(hist.astype(np.uint8), (7,1), 0)
 	hist = cv2.GaussianBlur(hist.astype(np.uint8), (7,1), 0)
 	hist = cv2.GaussianBlur(hist.astype(np.uint8), (7,1), 0)
-	# min, p = find_peaks(-hist.reshape((-1,)), distance=7, plateau_size=[0,10000])
-	# print(min)
 
 	min = np.where(hist.reshape((-1)) < 2, 1, 0).reshape((-1)).astype(np.bool)
 	min_arg = np.array(range(min.shape[0]))[min]
@@ -312,8 +305,6 @@ def extract_letters(img, region_rects=None):
 
 			thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, rectKernel)
 
-			hist = word_hist(subim)
-
 			# plt.imshow(thresh, cmap="gray")
 			# plt.show()
 			# find contours in the thresholded image, then initialize the
@@ -329,12 +320,7 @@ def extract_letters(img, region_rects=None):
 				# bounding box coordinates to derive the aspect ratio
 				(xl, yl, wl, hl) = cv2.boundingRect(c)
 				ar = w / float(h);locs.append((xl+x, yl+y, wl, hl))
-
-	# im_box = img.copy()
-	# for (x,y,w,h) in locs:
-	#     cv2.rectangle(im_box, (x, y), (x+w, y+h), (255, 0, 0))
-
-
+				
 	return locs
 
 
@@ -346,10 +332,6 @@ if __name__ == "__main__":
 	im_box = image.copy()
 	for (x,y,w,h) in text_regions:
 		cv2.rectangle(im_box, (x, y), (x+w, y+h), (255, 0, 0), 2)
-#        im_sm = image[y:y+h, x:x+w]
-#        reg = extract_letters(im_sm)
-	# plt.imshow(im_box[:,:,::-1], cmap="gray")
-	# plt.show()
 
 	word_regions = []
 	for (x,y,w,h) in text_regions:
@@ -367,27 +349,3 @@ if __name__ == "__main__":
 
 	plt.imshow(im_box[:,:,::-1], cmap="gray")
 	plt.show()
-# 	regions = extract_letters(image, regions)
-#
-# 	im_box = image.copy()
-# 	for (x,y,w,h) in regions:
-# 		cv2.rectangle(im_box, (x, y), (x+w, y+h), (255, 0, 0))
-# #        im_sm = image[y:y+h, x:x+w]
-# #        reg = extract_letters(im_sm)
-# 	plt.imshow(im_box[:,:,::-1], cmap="gray")
-# 	plt.show()
-
-
-
-#        im_sm = image[y:y+h, x:x+w]
-#        regions = extract_letters(im_sm)
-#out = image;
-#
-#    #for (x,y,w,h) in locs:
-#    #    cv2.rectangle(out, (x,y), (w+x,h+y), (255,0,0))
-#
-#    #plt.imshow(out[:,:,::-1], cmap="gray")
-#    #plt.show()
-#
-#sub_imgs = [image[y:y+h, x:x+w] for (x,y,w,h) in locs]
-#plot_pics(sub_imgs[:16], num_in_col=4)

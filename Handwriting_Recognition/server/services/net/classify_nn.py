@@ -11,7 +11,7 @@ import numpy as np
 import os
 import cv2
 from sklearn import svm, metrics
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import torch
 from torch.autograd import Variable
 import argparse
@@ -287,12 +287,12 @@ def classify(cl_filepath, im_filepath, letter_rects):
         img = cv2.imread(im_filepath)
 
         predictions = []
-        im_out = img.copy()
+
         for rect in letter_rects:
             x,y,w,h = rect
             subim = img[y:y+h, x:x+w]
 
-            desc = descriptor.binary_descriptor_inv(subim)
+            desc = descriptor.format_img_emnist(subim,desc_method=descriptor.binary_descriptor_inv)
 
             X = torch.Tensor(np.array(desc).astype(np.uint8).reshape(-1,desc.shape[0]))
 
@@ -303,14 +303,12 @@ def classify(cl_filepath, im_filepath, letter_rects):
             pred = chr(class_ind[0]+64) if class_ind[0] > 0 and class_ind[0] < 27 else '?'
             predictions.append(pred)
 
-            # print(pred, class_ind[0])
+            print(desc.reshape((28,28)))
+            # plt.imshow(desc.reshape((28,28)))
+            # plt.show()
+            print(pred, class_ind[0])
             # cv2.imshow("subim", subim)
             # cv2.waitKey(0)
-
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            cv2.putText(im_out,pred,(x,y), font, 2,(0,0,255),2,cv2.LINE_AA)
-            cv2.rectangle(im_out, (x, y), (x+w, y+h), (255, 0, 0))
-        cv2.imwrite("images/out.jpg", im_out)
 
         return predictions
 

@@ -150,18 +150,31 @@ def label_image_get(filename):
     )
     image_name = request.form.get("img_name") if "img_name" in request.form else ""
 
-    class_path = os.path.join("classifiers", "dev_demo_1", "mnist.pt")
+    class_path = os.path.join("classifiers", "dev_demo_1", "emnist_28x28.pt")
     image_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
 
     img = cv2.imread(image_path)
 
     text_regions = extract1.extract_regions(img)
+    # print(text_regions)
     letter_rects = extract1.extract_letters(img, text_regions)
-    print(letter_rects)
+    # print(letter_rects)
 
     predictions = classify_nn.classify(class_path, image_path, letter_rects)
 
-    print(predictions)
+    im_out = img.copy()
+    for (x,y,w,h) in text_regions:
+        cv2.rectangle(im_out, (x, y), (x+w, y+h), (0, 255, 0))
+
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    for i in range(len(letter_rects)):
+        pred = predictions[i]
+        (x,y,w,h) = letter_rects[i]
+        cv2.putText(im_out,pred,(x,y), font, 2,(0,0,255),2,cv2.LINE_AA)
+        cv2.rectangle(im_out, (x, y), (x+w, y+h), (255, 0, 0))
+    cv2.imwrite("images/out.jpg", im_out)
+
+    # print(predictions)
 
     data = {
         "letter_rects" : letter_rects,
