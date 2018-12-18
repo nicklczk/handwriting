@@ -12,6 +12,7 @@ sklearn = "*"
 matplotlib = "*"
 torch = "*"
 werkzeug = "*"
+npm = "*"
 
 [dev-packages]
 v = {editable = true,version = "*"}
