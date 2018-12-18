@@ -44,11 +44,16 @@ def basic_descriptor(img):
     img_r = cv2.resize(img, dsize=(24,32))
     return img_r.flatten()
 
-def binary_descriptor_inv(img):
-    img_r = cv2.resize(img, dsize=(24,32))
+def binary_descriptor(img):
+    img_r = cv2.resize(img, dsize=(28,28))
     img_gr = cv2.cvtColor(img_r, cv2.COLOR_BGR2GRAY)
-    img_gr = np.where(img_gr < 127, 0, 1)
-    print(img_gr)
+    img_gr = np.where(img_gr > 127, 1, 0)
+    return img_gr.flatten()
+
+def binary_descriptor_inv(img):
+    img_r = cv2.resize(img, dsize=(28,28))
+    img_gr = cv2.cvtColor(img_r, cv2.COLOR_BGR2GRAY)
+    img_gr = np.where(img_gr > 127, 0, 1)
     return img_gr.flatten()
 
 '''  Load batches of images into memory. For each image we:
